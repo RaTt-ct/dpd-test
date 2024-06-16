@@ -9,7 +9,7 @@
         class="table-wrapper max-w-screen-2xl border border-solid max-h-[70vh] h-auto w-full mx-4 2xl:mx-0 rounded-2xl overflow-hidden overflow-x-auto overflow-y-auto relative"
       >
         <div
-          class="grid grid-cols-7 py-1 bg-[#e5e5e5] rounded-t-2xl sticky top-0"
+          class="grid grid-cols-7 py-1 bg-[#ecd0d6] rounded-t-2xl sticky top-0"
         >
           <div
             v-for="(header, index) in tableHeaders"
@@ -32,8 +32,6 @@
         :page="page"
         :pageSize="pageSize"
         :tableLength="dataFromApi.length"
-        @setPagination="setPagination"
-        @goToPage="goToPage()"
         @setPage="setPage"
       />
     </div>
@@ -51,7 +49,6 @@ import { useRouter, useRoute } from "vue-router";
 
 const pageSize = ref<number>(20);
 const page = ref<number>(0);
-const paginationInput = ref<number>(0);
 const router = useRouter();
 const route = useRoute();
 
@@ -126,11 +123,11 @@ onBeforeMount(() => {
 }
 
 .table-row:nth-child(odd) {
-  background: rgba(0, 0, 0, 0.1);
+  background: rgba(160, 19, 52, 0.2);
 }
 
-.table-wrapper{
-  background: rgba(255,255,255,0.8);
+.table-wrapper {
+  background: rgba(255, 255, 255, 0.8);
 }
 
 .table-wrapper::-webkit-scrollbar {
@@ -143,7 +140,7 @@ onBeforeMount(() => {
 
 .table-wrapper::-webkit-scrollbar-thumb {
   width: 8px;
-  background: rgba(0, 0, 0, 0.2);
+  background: rgba(160, 19, 52, 0.2);
   border-radius: 24px;
 }
 </style>
