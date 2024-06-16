@@ -1,18 +1,10 @@
 <template>
   <div
-    class="max-h-screen max-w-screen h-screen w-full flex flex-col items-center justify-center"
+    class="max-h-screen max-w-[100vw] h-screen w-full flex flex-col items-center justify-center main-container"
   >
+    <img src="@/assets/logo.png" alt="dpd Лого" />
     <div>
-      <div class="flex justify-end mr-4 mb-4">
-        <input
-          type="text"
-          name="search"
-          class="border border-solid rounded-2xl pl-6 py-2 text-2xl"
-          placeholder="Поиск..."
-          @input="(ev) => search(ev)"
-        />
-      </div>
-
+      <TableSearch @search="search" :searchQuery="searchQuery" />
       <div
         class="table-wrapper max-w-screen-2xl border border-solid max-h-[70vh] h-auto w-full mx-4 2xl:mx-0 rounded-2xl overflow-hidden overflow-x-auto overflow-y-auto relative"
       >
@@ -36,92 +28,44 @@
           <TableDataRow :data="data" />
         </div>
       </div>
-
-      <div
-        class="flex gap-2 justify-end mr-4 mt-4"
-        v-if="dataFromApi.length / pageSize > 0"
-      >
-        <div>
-          <input
-            min="1"
-            :max="Math.floor(dataFromApi.length / pageSize)"
-            type="number"
-            name="pagination"
-            placeholder="Перейти на ..."
-            class="h-10 w-40 pl-4 border border-solid rounded-xl flex items-center justify-center cursor-pointer"
-            v-model="paginationInput"
-            @input="(ev) => (paginationInput = parseInt(ev.target.value))"
-            @keyup.enter="(ev) => goToPage(ev)"
-          />
-        </div>
-        <button
-          v-if="page !== 0"
-          class="h-10 w-10 border border-solid rounded-xl flex items-center justify-center cursor-pointer"
-          @click="page = 0"
-        >
-          <img
-            src="@/assets/icons/double-arrow-left.svg"
-            alt="Первая страница"
-          />
-        </button>
-        <button
-          v-if="page !== 0"
-          class="h-10 w-10 border border-solid rounded-xl flex items-center justify-center cursor-pointer"
-          @click="page = page - 1"
-        >
-          {{ page }}
-        </button>
-        <button
-          v-if="
-            page !== Math.floor(dataFromApi.length / pageSize) &&
-            page < Math.floor(dataFromApi.length / pageSize)
-          "
-          class="h-10 w-10 border border-solid rounded-xl flex items-center justify-center cursor-pointer"
-          @click="page = page + 1"
-        >
-          {{ page + 2 }}
-        </button>
-        <button
-          v-if="
-            page !== Math.floor(dataFromApi.length / pageSize) &&
-            page < Math.floor(dataFromApi.length / pageSize)
-          "
-          class="h-10 w-10 border border-solid rounded-xl flex items-center justify-center cursor-pointer rotate-180"
-          @click="page = Math.floor(dataFromApi.length / pageSize)"
-        >
-          <img
-            src="@/assets/icons/double-arrow-left.svg"
-            alt="Последняя страница"
-          />
-        </button>
-      </div>
-      <div v-else>
-        <span class="mt-4 block pl-4"
-          >По текущему запросу результаты не найдены</span
-        >
-      </div>
+      <TablePagination
+        :page="page"
+        :pageSize="pageSize"
+        :tableLength="dataFromApi.length"
+        @setPagination="setPagination"
+        @goToPage="goToPage()"
+        @setPage="setPage"
+      />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import apiData from "../../api/api";
-import { computed, ref, watch } from "vue";
+import { computed, onBeforeMount, onBeforeUnmount, ref } from "vue";
 import TableDataRow from "../components/Table/DataRow.vue";
+import TablePagination from "../components/Table/Pagination.vue";
+import TableSearch from "../components/Table/Search.vue";
+import type { IApi } from "@/interfaces/api";
+import { useRouter, useRoute } from "vue-router";
 
 const pageSize = ref<number>(20);
 const page = ref<number>(0);
 const paginationInput = ref<number>(0);
+const router = useRouter();
+const route = useRoute();
 
-const dataFromApi = ref(apiData.results);
+const searchQuery = ref("");
+
+const dataFromApi = ref<Array<IApi>>(apiData.results);
 
 const tableHeaders = [
-  { label: "Аватар", key: "[picture][medium]" },
-  { label: "ФИО", key: "[name][first]" },
-  { label: "Пол", key: "[gender]" },
-  { label: "Страна", key: "[location][country]" },
+  { label: "Аватар", key: "picture.medium" },
+  { label: "ФИО", key: "name.first" },
+  { label: "Пол", key: "gender" },
+  { label: "Страна", key: "location.country" },
   { label: "Дата рождения", key: "dob.date" },
-  { label: "Адрес электронной почты", key: "[email]" },
+  { label: "Адрес электронной почты", key: "email" },
   { label: "Телефон", key: "phone" },
 ];
 
@@ -132,40 +76,61 @@ const dataToGrid = computed(() =>
   )
 );
 
-const search = (ev: Event) => {
-  const filteredData = [];
+const search = (query: string, setFirstPage: boolean) => {
+  const filteredData: Array<IApi> = [];
+  searchQuery.value = query;
   apiData.results.forEach((el) => {
     if (
-      JSON.stringify(el).toLowerCase().includes(ev.target.value.toLowerCase())
+      JSON.stringify(el).toLowerCase().includes(searchQuery.value.toLowerCase())
     ) {
       filteredData.push(el);
     }
   });
   dataFromApi.value = filteredData;
-  page.value = 0;
+  if (setFirstPage) page.value = 0;
+  router.push(`?query=${searchQuery.value}&page=${page.value}`);
 };
 
-const goToPage = () => {
-  if (
-    paginationInput.value - 1 < dataFromApi.value.length / pageSize.value &&
-    paginationInput.value > 0
-  ) {
-    page.value = paginationInput.value - 1;
-  }
-};
+const resolvePath = (object: any, path: string): string =>
+  path.split(".").reduce((o, k) => (o || {})[k], object);
 
-const sortBy = (key) => {
-  console.log(key);
+const sortBy = (key: string) => {
   dataFromApi.value = dataFromApi.value.sort((a, b) =>
-    a[key] > b[key] ? 1 : -1
+    resolvePath(a, key) > resolvePath(b, key) ? 1 : -1
   );
-  console.log(dataFromApi.value);
 };
+
+const setPage = (pageToSet: number) => {
+  if (
+    pageToSet < Math.ceil(dataFromApi.value.length / pageSize.value) &&
+    pageToSet >= 0
+  ) {
+    page.value = pageToSet;
+  }
+  router.push(`?query=${searchQuery.value}&page=${page.value}`);
+};
+
+onBeforeMount(() => {
+  page.value = route.query.page ? parseInt(route.query.page) : 0;
+  searchQuery.value = route.query.query ? route.query.query : "";
+  if (searchQuery.value) search(searchQuery.value);
+});
 </script>
 
 <style scoped>
+.main-container {
+  background-image: url("@/assets/dpd-logo-700.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 75%;
+}
+
 .table-row:nth-child(odd) {
   background: rgba(0, 0, 0, 0.1);
+}
+
+.table-wrapper{
+  background: rgba(255,255,255,0.8);
 }
 
 .table-wrapper::-webkit-scrollbar {
