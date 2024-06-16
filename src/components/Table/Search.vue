@@ -3,7 +3,7 @@
     <input
       type="text"
       name="search"
-      class="border border-solid rounded-2xl pl-6 py-2 text-2xl"
+      class="border border-solid rounded-xl pl-6 py-2 text-xl"
       placeholder="Поиск..."
       :value="searchValue"
       @input="(ev) => $emit('search', ev.target.value, true)"

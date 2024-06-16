@@ -9,7 +9,7 @@
         class="table-wrapper max-w-screen-2xl border border-solid max-h-[70vh] h-auto w-full mx-4 2xl:mx-0 rounded-2xl overflow-hidden overflow-x-auto overflow-y-auto relative"
       >
         <div
-          class="grid grid-cols-7 py-1 bg-[#ecd0d6] rounded-t-2xl sticky top-0"
+          class="grid grid-cols-7 py-1 bg-[#ecd0d6] rounded-t-xl sticky top-0"
         >
           <div
             v-for="(header, index) in tableHeaders"
@@ -23,7 +23,7 @@
         <div
           v-for="(data, index) in dataToGrid"
           :key="index"
-          class="grid grid-cols-7 py-4 table-row text-center"
+          class="grid grid-cols-7 py-4 table-row text-center items-center"
         >
           <TableDataRow :data="data" />
         </div>
@@ -141,6 +141,6 @@ onBeforeMount(() => {
 .table-wrapper::-webkit-scrollbar-thumb {
   width: 8px;
   background: rgba(160, 19, 52, 0.2);
-  border-radius: 24px;
+  border-radius: 12%;
 }
 </style>
