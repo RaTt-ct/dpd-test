@@ -40,7 +40,7 @@
 
 <script setup lang="ts">
 import apiData from "../../api/api";
-import { computed, onBeforeMount, onBeforeUnmount, ref } from "vue";
+import { computed, onBeforeMount, ref } from "vue";
 import TableDataRow from "../components/Table/DataRow.vue";
 import TablePagination from "../components/Table/Pagination.vue";
 import TableSearch from "../components/Table/Search.vue";
